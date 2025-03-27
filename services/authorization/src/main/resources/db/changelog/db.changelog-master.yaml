@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-drop-schema
+      author: dev
+      context: dev
+      runAlways: true
+      changes:
+        - sql:
+            sql: |
+              DROP SCHEMA access_users CASCADE;
+              CREATE SCHEMA access_users;
+  - changeSet:
+      id: 002-add-tables-user
+      author: AMorozov
+      context: dev
+      runAlways: true
+      changes:
+        - sqlFile:
+            path: db/sql/init_users.sql
+            relativeToChangelogFile: false
+            encoding: UTF-8
+  - changeSet:
+      id: 003-add-data
+      author: AMorozov
+      context: dev
+      runAlways: true
+      changes:
+        - sqlFile:
+            path: db/sql/init_users_add.sql
+            relativeToChangelogFile: false
+            encoding: UTF-8
+  - changeSet:
+      id: 002-add-tables-user-prod
+      author: AMorozov
+      context: prod
+      changes:
+        - sqlFile:
+            path: db/sql/init_users.sql
+            relativeToChangelogFile: false
+            encoding: UTF-8
