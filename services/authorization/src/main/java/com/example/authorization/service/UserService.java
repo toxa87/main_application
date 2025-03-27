@@ -1,5 +1,6 @@
 package com.example.authorization.service;
 
+import com.example.authorization.config.SecurityConfig;
 import com.example.authorization.dto.CreateUserRequest;
 import com.example.authorization.entity.User;
 import com.example.authorization.repository.UserRepository;
@@ -9,11 +10,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private SecurityConfig securityConfig;
 
     public User createUser(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.email())){
@@ -26,8 +27,10 @@ public class UserService {
 
         User user = new User();
         user.setEmail(request.email());
-        user.setPassword(request.password());
         user.setUsername(request.username());
+
+        String encodedPassword = securityConfig.passwordEncoder().encode(request.password());
+        user.setPassword(encodedPassword);
 
         return userRepository.save(user);
     }
