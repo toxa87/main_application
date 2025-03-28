@@ -35,6 +35,6 @@ databaseChangeLog:
       context: prod
       changes:
         - sqlFile:
-            path: db/sql/init_users.sql
+            path: db/sql/init_users_prod.sql
             relativeToChangelogFile: false
             encoding: UTF-8
