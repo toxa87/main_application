@@ -5,7 +5,10 @@ import com.example.authorization.dto.JwtResponse;
 import com.example.authorization.dto.LoginRequest;
 import com.example.authorization.entity.User;
 import com.example.authorization.service.AuthService;
+import com.example.authorization.service.RateLimiterService;
 import com.example.authorization.service.UserService;
+import io.github.bucket4j.Bucket;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,9 +29,17 @@ public class UserController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final RateLimiterService rateLimiter;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createUser(@RequestBody @Valid CreateUserRequest request) {
+    public ResponseEntity<?> createUser(@RequestBody @Valid CreateUserRequest request,
+                                        HttpServletRequest httpRequest) {
+
+        String ip = httpRequest.getRemoteAddr();
+        if (!rateLimiter.tryConsume(ip)){
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Слишком много запросов");
+        }
+
         try {
             User created = userService.createUser(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);

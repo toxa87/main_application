@@ -4,24 +4,31 @@ import com.example.authorization.config.SecurityConfig;
 import com.example.authorization.dto.CreateUserRequest;
 import com.example.authorization.entity.User;
 import com.example.authorization.repository.UserRepository;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private SecurityConfig securityConfig;
+    private final SecurityConfig securityConfig;
 
     public User createUser(CreateUserRequest request) {
-        if (userRepository.existsByEmail(request.email())){
+        if (userRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Данный email уже зарегистрирован");
         }
 
-        if (userRepository.existsByUsername(request.username())){
+        if (userRepository.existsByUsername(request.username())) {
             throw new IllegalArgumentException("Данное имя пользователя уже зарегистрировано");
         }
 
