@@ -19,7 +19,7 @@ public class RefreshToken {
     @Column(name="refresh_token", nullable = false, unique = true)
     private String refreshToken;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -31,5 +31,14 @@ public class RefreshToken {
 
     @Column(name = "revoked_at")
     private Boolean revokedAt;
+
+    public boolean isExpired() {
+        return expiredAt.isBefore(LocalDateTime.now());
+    };
+
+    public boolean isRevoked() {
+        return revokedAt;
+    };
+
 
 }

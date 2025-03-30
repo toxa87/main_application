@@ -1,9 +1,6 @@
 package com.example.authorization.controller;
 
-import com.example.authorization.dto.AuthResponse;
-import com.example.authorization.dto.CreateUserRequest;
-import com.example.authorization.dto.JwtResponse;
-import com.example.authorization.dto.LoginRequest;
+import com.example.authorization.dto.*;
 import com.example.authorization.entity.ConfirmationToken;
 import com.example.authorization.entity.User;
 import com.example.authorization.repository.ConfirmationTokenRepository;
@@ -96,5 +93,21 @@ public class UserController {
                     .body(Map.of("error", "Что-то пошло не так"));
         }
     }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
+        try {
+            AuthResponse response = authService.refreshToken(request);
+            return ResponseEntity.ok(response);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity
+                    .status(e.getStatusCode()) // 400, 401 и т.д.
+                    .body(Map.of("error", e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Что-то пошло не так"));
+        }
+    }
+
 
 }

@@ -51,6 +51,7 @@ public class TokenService {
         refreshToken.setRefreshToken(token);
         refreshToken.setCreatedAt(LocalDateTime.now());
         refreshToken.setExpiredAt(LocalDateTime.now().plusSeconds(EXPIRATION_TIME_REFRESH_TOKEN));
+        refreshToken.setRevokedAt(false);
         refreshTokenRepository.deleteByUser(user);
         refreshTokenRepository.save(refreshToken);
 
@@ -76,7 +77,7 @@ public class TokenService {
         return expiration.before(new Date());
     }
 
-    public boolean validateToken(String token, User user) {
+    public boolean validateAccessToken(String token, User user) {
         final String email = extractEmail(token);
         return (email.equals(user.getEmail())) && !isTokenExpired(token);
     }
