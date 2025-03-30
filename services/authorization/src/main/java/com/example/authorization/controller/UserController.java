@@ -109,5 +109,23 @@ public class UserController {
         }
     }
 
+    @PostMapping("/logout-token")
+    public ResponseEntity<?> logoutToken(
+            @RequestBody RefreshTokenRequest request,
+            HttpServletRequest httpRequest // для доступа к access-токену в заголовке
+    ) {
+        try {
+            authService.logout(request, httpRequest);
+            return ResponseEntity.ok().build();
+        } catch (ResponseStatusException e) {
+            return ResponseEntity
+                    .status(e.getStatusCode()) // 400, 401 и т.д.
+                    .body(Map.of("error", e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Что-то пошло не так"));
+        }
+    }
+
 
 }

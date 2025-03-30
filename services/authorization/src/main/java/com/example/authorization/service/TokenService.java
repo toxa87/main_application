@@ -1,18 +1,20 @@
 package com.example.authorization.service;
 
+import com.example.authorization.security.SecurityConfig;
 import com.example.authorization.entity.RefreshToken;
 import com.example.authorization.entity.User;
 import com.example.authorization.repository.RefreshTokenRepository;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
 
@@ -27,6 +29,8 @@ public class TokenService {
     private static final long EXPIRATION_TIME_REFRESH_TOKEN = 15L * 24 * 60 * 60; // 15 дней в секундах
 
     private final RefreshTokenRepository refreshTokenRepository;
+
+    private final SecurityConfig securityConfig;
 
     public String generateAccessToken(User user) {
         Date now = new Date();
@@ -48,7 +52,7 @@ public class TokenService {
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
-        refreshToken.setRefreshToken(token);
+        refreshToken.setRefreshToken(securityConfig.hashToken(token));
         refreshToken.setCreatedAt(LocalDateTime.now());
         refreshToken.setExpiredAt(LocalDateTime.now().plusSeconds(EXPIRATION_TIME_REFRESH_TOKEN));
         refreshToken.setRevokedAt(false);
@@ -77,8 +81,30 @@ public class TokenService {
         return expiration.before(new Date());
     }
 
-    public boolean validateAccessToken(String token, User user) {
-        final String email = extractEmail(token);
-        return (email.equals(user.getEmail())) && !isTokenExpired(token);
+    public boolean validateAccessToken(String token) {
+        return !isTokenExpired(token);
+    }
+
+    public LocalDateTime getExpiration(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        Date expiration = claims.getExpiration();
+        return expiration.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
+    public String getUserName(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        String userName = claims.getSubject();
+        return userName;
     }
 }

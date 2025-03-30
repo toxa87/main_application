@@ -1,6 +1,6 @@
 package com.example.authorization.service;
 
-import com.example.authorization.config.SecurityConfig;
+import com.example.authorization.security.SecurityConfig;
 import com.example.authorization.dto.CreateUserRequest;
 import com.example.authorization.entity.User;
 import com.example.authorization.repository.UserRepository;

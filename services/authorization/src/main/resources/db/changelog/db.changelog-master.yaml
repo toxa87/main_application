@@ -39,6 +39,16 @@ databaseChangeLog:
             path: db/sql/init_refresh_token.sql
             relativeToChangelogFile: false
             encoding: UTF-8
+  - changeSet:
+      id: 005-add-tables-access-token-blacklist
+      author: AMorozov
+      context: dev
+      runAlways: true
+      changes:
+        - sqlFile:
+            path: db/sql/init_access_token_blacklist.sql
+            relativeToChangelogFile: false
+            encoding: UTF-8
 #Прод окружение
   - changeSet:
       id: 001-drop-schema-prod
@@ -73,5 +83,14 @@ databaseChangeLog:
       changes:
         - sqlFile:
             path: db/sql/init_refresh_token.sql
+            relativeToChangelogFile: false
+            encoding: UTF-8
+  - changeSet:
+      id: 005-add-tables-access-token-blacklist
+      author: AMorozov
+      context: prod
+      changes:
+        - sqlFile:
+            path: db/sql/init_access_token_blacklist.sql
             relativeToChangelogFile: false
             encoding: UTF-8
