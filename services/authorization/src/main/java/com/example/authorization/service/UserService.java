@@ -4,19 +4,9 @@ import com.example.authorization.config.SecurityConfig;
 import com.example.authorization.dto.CreateUserRequest;
 import com.example.authorization.entity.User;
 import com.example.authorization.repository.UserRepository;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static java.lang.String.format;
 
 @Service
 @RequiredArgsConstructor
