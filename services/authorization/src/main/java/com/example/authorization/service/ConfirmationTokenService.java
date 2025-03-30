@@ -14,13 +14,15 @@ import java.util.UUID;
 public class ConfirmationTokenService {
     private final ConfirmationTokenRepository confirmationTokenRepository;
 
+    private static final long EXPIRATION_TIME_CONFIRMATION_TOKEN = 15*60;
+
     public String generateConfirmationToken(User user) {
         String token = UUID.randomUUID().toString();
         ConfirmationToken confirmationToken = new ConfirmationToken();
         confirmationToken.setToken(token);
         confirmationToken.setUser(user);
         confirmationToken.setCreatedAt(LocalDateTime.now());
-        confirmationToken.setExpiredAt(LocalDateTime.now().plusMinutes(15));
+        confirmationToken.setExpiredAt(LocalDateTime.now().plusSeconds(EXPIRATION_TIME_CONFIRMATION_TOKEN));
         confirmationTokenRepository.save(confirmationToken);
 
         return token;

@@ -4,6 +4,6 @@ create table access_users.confirmation_token (
     expired_at timestamp,
     create_at timestamp default now(),
     user_id uuid not null,
-    constraint f_user_id foreign key (user_id) references access_users.users(user_id) on delete cascade
+    constraint f_ct_user_id foreign key (user_id) references access_users.users(user_id) on delete cascade
 
 );

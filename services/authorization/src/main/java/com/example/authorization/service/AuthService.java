@@ -1,5 +1,6 @@
 package com.example.authorization.service;
 
+import com.example.authorization.dto.AuthResponse;
 import com.example.authorization.entity.User;
 import com.example.authorization.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +16,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
 
-    public String login(String email, String password) {
+    public AuthResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь с таким email не найден"));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Неверный пароль");
         }
 
-        return tokenService.generateToken(user);
+        String accessToken = tokenService.generateAccessToken(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
+
+        return new AuthResponse(accessToken,refreshToken);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.authorization.controller;
 
+import com.example.authorization.dto.AuthResponse;
 import com.example.authorization.dto.CreateUserRequest;
 import com.example.authorization.dto.JwtResponse;
 import com.example.authorization.dto.LoginRequest;
@@ -32,7 +33,7 @@ public class UserController {
     private final AuthService authService;
     private final RateLimiterService rateLimiter;
     //Репозитории
-    private final ConfirmationTokenRepository tokenRepository;
+    private final ConfirmationTokenRepository confirmationTokenRepository;
     private final UserRepository userRepository;
 
     @PostMapping("/create")
@@ -56,8 +57,8 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            String token = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
-            return ResponseEntity.ok(new JwtResponse(token));
+            AuthResponse tokens = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
+            return ResponseEntity.ok(tokens);
         } catch (UsernameNotFoundException | BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", e.getMessage()));
@@ -70,22 +71,26 @@ public class UserController {
     @GetMapping("/confirm")
     public ResponseEntity<?> confirmUser(@RequestParam String token) {
         try {
-            ConfirmationToken confirmationToken = tokenRepository.findByToken(token)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid token"));
+            ConfirmationToken confirmationToken = confirmationTokenRepository.findByToken(token)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Токен подтверждения не найден"));
 
             if (confirmationToken.getExpiredAt().isBefore(LocalDateTime.now())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token expired");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Токен подтверждения просрочился");
             }
 
             User user = confirmationToken.getUser();
             user.setActive(true);
             userRepository.save(user);
-            tokenRepository.delete(confirmationToken);
+            confirmationTokenRepository.delete(confirmationToken);
 
             return ResponseEntity.ok("Пользователь подтверждён");
         } catch (UsernameNotFoundException | BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", e.getMessage()));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity
+                    .status(e.getStatusCode()) // 400, 401 и т.д.
+                    .body(Map.of("error", e.getReason())); // сообщение, которое ты передал
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Что-то пошло не так"));

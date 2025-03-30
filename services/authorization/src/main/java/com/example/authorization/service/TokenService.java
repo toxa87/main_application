@@ -1,25 +1,36 @@
 package com.example.authorization.service;
 
+import com.example.authorization.entity.RefreshToken;
 import com.example.authorization.entity.User;
+import com.example.authorization.repository.RefreshTokenRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class TokenService {
 
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final long EXPIRATION_TIME = 8640000;
+    private static final long EXPIRATION_TIME_ACCESS_TOKEN = 15 * 60 * 1000; // 15 минут в миллисекундах
+    private static final long EXPIRATION_TIME_REFRESH_TOKEN = 15L * 24 * 60 * 60; // 15 дней в секундах
 
-    public String generateToken(User user) {
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    public String generateAccessToken(User user) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
+        Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME_ACCESS_TOKEN);
 
         return Jwts.builder()
                 .setSubject(user.getEmail())
@@ -28,6 +39,22 @@ public class TokenService {
                 .claim("userId", user.getUserId())
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
                 .compact();
+    }
+
+    @Transactional
+    public String generateRefreshToken(User user) {
+
+        String token = UUID.randomUUID().toString();
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
+        refreshToken.setRefreshToken(token);
+        refreshToken.setCreatedAt(LocalDateTime.now());
+        refreshToken.setExpiredAt(LocalDateTime.now().plusSeconds(EXPIRATION_TIME_REFRESH_TOKEN));
+        refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.save(refreshToken);
+
+        return token;
     }
 
     public String extractEmail(String token) {
@@ -39,7 +66,7 @@ public class TokenService {
                 .getSubject();
     }
 
-    private Boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(String token) {
         Date expiration = Jwts.parserBuilder()
                 .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
                 .build()
@@ -49,7 +76,7 @@ public class TokenService {
         return expiration.before(new Date());
     }
 
-    public Boolean validateToken(String token, User user) {
+    public boolean validateToken(String token, User user) {
         final String email = extractEmail(token);
         return (email.equals(user.getEmail())) && !isTokenExpired(token);
     }
