@@ -1,4 +1,15 @@
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: t60564533@gmail.com
+    password: 1234qwer!q
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:mydatabase}
     username: ${DB_USERNAME:myuser}
@@ -20,3 +31,5 @@ spring:
     active: dev
 jwt:
   secret: mysupersecretkeythatshouldbeatleast32byteslong!
+settings:
+  application_url: localhost:8080

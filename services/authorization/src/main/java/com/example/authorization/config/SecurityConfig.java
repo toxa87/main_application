@@ -23,7 +23,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // говорим: без сессий
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/login","/api/users/create").permitAll()
+                        .requestMatchers("/api/users/login"
+                                ,"/api/users/create"
+                                ,"/api/users/confirm").permitAll()
                         .anyRequest().authenticated()
                 );
         return http.build();

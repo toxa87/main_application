@@ -8,12 +8,15 @@ import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Bucket4j;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.lang.String.format;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,11 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final SecurityConfig securityConfig;
+
+    private final ConfirmationTokenService tokenService;
+
+    @Value("${settings.application_url}")
+    private String applicationUrl;
 
     public User createUser(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -39,7 +47,14 @@ public class UserService {
         String encodedPassword = securityConfig.passwordEncoder().encode(request.password());
         user.setPassword(encodedPassword);
 
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        // вот этот блок 👇
+        String token = tokenService.generateConfirmationToken(user);
+        String confirmUrl = applicationUrl + "/api/users/confirm?token=" + token;
+        System.out.println(confirmUrl);
+
+        return user;
     }
 
 }

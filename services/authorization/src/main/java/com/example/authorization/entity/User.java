@@ -29,4 +29,7 @@ public class User {
     @Column(name = "create_at")
     private LocalDateTime createAt = LocalDateTime.now();
 
+    @Column(nullable = false)
+    private boolean active = false;
+
 }

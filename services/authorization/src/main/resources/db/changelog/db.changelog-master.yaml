@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 001-drop-schema
-      author: dev
+      author: AMorozov
       context: dev
       runAlways: true
       changes:
@@ -20,21 +20,39 @@ databaseChangeLog:
             relativeToChangelogFile: false
             encoding: UTF-8
   - changeSet:
-      id: 003-add-data
+      id: 003-add-tables-confirmation-token
       author: AMorozov
       context: dev
       runAlways: true
       changes:
         - sqlFile:
-            path: db/sql/init_users_add.sql
+            path: db/sql/init_confirmation_token.sql
             relativeToChangelogFile: false
             encoding: UTF-8
+#Прод окружение
+  - changeSet:
+      id: 001-drop-schema-prod
+      author: AMorozov
+      context: prod
+      changes:
+        - sql:
+            sql: |
+              CREATE SCHEMA access_users;
   - changeSet:
       id: 002-add-tables-user-prod
       author: AMorozov
       context: prod
       changes:
         - sqlFile:
-            path: db/sql/init_users_prod.sql
+            path: db/sql/init_users.sql
+            relativeToChangelogFile: false
+            encoding: UTF-8
+  - changeSet:
+      id: 003-add-tables-confirmation-token
+      author: AMorozov
+      context: prod
+      changes:
+        - sqlFile:
+            path: db/sql/init_confirmation_token.sql
             relativeToChangelogFile: false
             encoding: UTF-8

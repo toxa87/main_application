@@ -3,5 +3,6 @@ create table access_users.users (
     email varchar(255) unique not null,
     username varchar(255) unique not null,
     password varchar(255) not null,
-    create_at timestamp default now()
+    create_at timestamp default now(),
+    active boolean
 );
